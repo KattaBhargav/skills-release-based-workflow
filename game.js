@@ -62,7 +62,48 @@ var OBJECT_PLAYER = 1,
   OBJECT_ENEMY_PROJECTILE = 8,
   OBJECT_POWERUP = 16;
 
+var currentUser = null;
+var highScores = [];
+
+// User management functions
+var UserManager = {
+  init: function() {
+    this.loadHighScores();
+  },
+  
+  setCurrentUser: function(username) {
+    currentUser = username;
+    localStorage.setItem('currentUser', username);
+  },
+  
+  getCurrentUser: function() {
+    if (!currentUser) {
+      currentUser = localStorage.getItem('currentUser') || 'Player';
+    }
+    return currentUser;
+  },
+  
+  loadHighScores: function() {
+    var stored = localStorage.getItem('highScores');
+    highScores = stored ? JSON.parse(stored) : [];
+  },
+  
+  saveHighScore: function(score) {
+    var username = this.getCurrentUser();
+    highScores.push({ name: username, score: score, date: new Date().toISOString() });
+    highScores.sort(function(a, b) { return b.score - a.score; });
+    highScores = highScores.slice(0, 10); // Keep top 10
+    localStorage.setItem('highScores', JSON.stringify(highScores));
+  },
+  
+  getHighScores: function() {
+    return highScores;
+  }
+};
+
 var startGame = function () {
+  UserManager.init();
+  
   var ua = navigator.userAgent.toLowerCase();
 
   // Only 1 row of stars
@@ -75,8 +116,44 @@ var startGame = function () {
   }
   Game.setBoard(
     3,
-    new TitleScreen("Alien Invasion", "Press fire to start playing", playGame)
+    new TitleScreen("Alien Invasion", "Press fire to start playing", showRegistration)
   );
+};
+
+var registrationInitialized = false;
+
+var showRegistration = function() {
+  var overlay = document.getElementById('registration-overlay');
+  var input = document.getElementById('username-input');
+  var btn = document.getElementById('start-game-btn');
+  
+  overlay.style.display = 'flex';
+  input.value = UserManager.getCurrentUser();
+  input.focus();
+  
+  var startGameHandler = function() {
+    var currentInput = document.getElementById('username-input');
+    var currentOverlay = document.getElementById('registration-overlay');
+    var username = currentInput.value.trim();
+    if (username) {
+      UserManager.setCurrentUser(username);
+      currentOverlay.style.display = 'none';
+      playGame();
+    } else {
+      alert('Please enter your name!');
+    }
+  };
+  
+  // Only attach event handlers once to prevent memory leaks
+  if (!registrationInitialized) {
+    btn.onclick = startGameHandler;
+    input.onkeypress = function(e) {
+      if (e.key === 'Enter') {
+        startGameHandler();
+      }
+    };
+    registrationInitialized = true;
+  }
 };
 
 var level1 = [
@@ -100,16 +177,18 @@ var playGame = function () {
 };
 
 var winGame = function () {
+  UserManager.saveHighScore(Game.points);
   Game.setBoard(
     3,
-    new TitleScreen("You win!", "Press fire to play again", playGame)
+    new TitleScreen("You win!", "Press fire to play again", showRegistration)
   );
 };
 
 var loseGame = function () {
+  UserManager.saveHighScore(Game.points);
   Game.setBoard(
     3,
-    new TitleScreen("You lose!", "Press fire to play again", playGame)
+    new TitleScreen("You lose!", "Press fire to play again", showRegistration)
   );
 };
 

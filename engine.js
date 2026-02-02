@@ -203,6 +203,19 @@ var TitleScreen = function TitleScreen(title, subtitle, callback) {
       Game.width / 2 - measure2.width / 2,
       Game.height / 2 + 40
     );
+    
+    // Display high scores
+    var scores = UserManager.getHighScores();
+    if (scores.length > 0) {
+      ctx.font = "bold 14px bangers";
+      ctx.fillText("HIGH SCORES", Game.width / 2 - 50, Game.height / 2 + 80);
+      
+      ctx.font = "12px bangers";
+      for (var i = 0; i < Math.min(5, scores.length); i++) {
+        var scoreText = (i + 1) + ". " + scores[i].name + ": " + scores[i].score;
+        ctx.fillText(scoreText, Game.width / 2 - 60, Game.height / 2 + 100 + i * 15);
+      }
+    }
   };
 };
 
@@ -479,7 +492,7 @@ var GamePoints = function () {
 
   this.draw = function (ctx) {
     ctx.save();
-    ctx.font = "bold 18px arial";
+    ctx.font = "bold 18px bangers";
     ctx.fillStyle = "#00FF00";
 
     var txt = "" + Game.points;
@@ -490,6 +503,12 @@ var GamePoints = function () {
     }
 
     ctx.fillText(zeros + txt, 10, 20);
+    
+    // Display current player name
+    ctx.font = "bold 12px bangers";
+    var playerName = UserManager.getCurrentUser();
+    ctx.fillText("Player: " + playerName, 10, 40);
+    
     ctx.restore();
   };
 
