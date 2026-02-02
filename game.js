@@ -132,10 +132,12 @@ var showRegistration = function() {
   input.focus();
   
   var startGameHandler = function() {
-    var username = input.value.trim();
+    var currentInput = document.getElementById('username-input');
+    var currentOverlay = document.getElementById('registration-overlay');
+    var username = currentInput.value.trim();
     if (username) {
       UserManager.setCurrentUser(username);
-      overlay.style.display = 'none';
+      currentOverlay.style.display = 'none';
       playGame();
     } else {
       alert('Please enter your name!');
