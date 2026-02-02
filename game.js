@@ -120,6 +120,8 @@ var startGame = function () {
   );
 };
 
+var registrationInitialized = false;
+
 var showRegistration = function() {
   var overlay = document.getElementById('registration-overlay');
   var input = document.getElementById('username-input');
@@ -140,12 +142,16 @@ var showRegistration = function() {
     }
   };
   
-  btn.onclick = startGameHandler;
-  input.onkeypress = function(e) {
-    if (e.keyCode === 13) {
-      startGameHandler();
-    }
-  };
+  // Only attach event handlers once to prevent memory leaks
+  if (!registrationInitialized) {
+    btn.onclick = startGameHandler;
+    input.onkeypress = function(e) {
+      if (e.key === 'Enter') {
+        startGameHandler();
+      }
+    };
+    registrationInitialized = true;
+  }
 };
 
 var level1 = [
