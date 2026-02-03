@@ -206,6 +206,35 @@ var TitleScreen = function TitleScreen(title, subtitle, callback) {
   };
 };
 
+var PlayerNameScreen = function (callback) {
+  var self = this;
+
+  this.step = function (dt) {
+    // Screen is replaced immediately after prompt
+  };
+
+  this.draw = function (ctx) {
+    // Draw a simple loading/waiting screen
+    ctx.fillStyle = "#00FF00";
+    ctx.font = "bold 30px bangers";
+    var title = "Welcome to Alien Invasion!";
+    var measure = ctx.measureText(title);
+    ctx.fillText(title, Game.width / 2 - measure.width / 2, Game.height / 2);
+  };
+
+  // Short delay to allow the game canvas to render before showing the prompt
+  setTimeout(function () {
+    var name = prompt("Enter your name:", UserProfile.playerName || "Guest");
+    if (name && name.trim()) {
+      UserProfile.setPlayerName(name.trim());
+    } else {
+      // Set default name if none provided
+      UserProfile.setPlayerName("Guest");
+    }
+    if (callback) callback();
+  }, 100);
+};
+
 var GameBoard = function () {
   var board = this;
 
@@ -490,8 +519,68 @@ var GamePoints = function () {
     }
 
     ctx.fillText(zeros + txt, 10, 20);
+
+    // Display player name if set
+    if (UserProfile.playerName) {
+      ctx.fillText("Player: " + UserProfile.playerName, 10, 45);
+    }
+
+    // Display high score
+    if (UserProfile.highScore > 0) {
+      ctx.fillText("High Score: " + UserProfile.highScore, 10, 70);
+    }
+
     ctx.restore();
   };
 
   this.step = function (dt) {};
+};
+
+// User Profile Management
+var UserProfile = {
+  playerName: "",
+  highScore: 0,
+
+  init: function () {
+    this.load();
+  },
+
+  load: function () {
+    try {
+      var savedProfile = localStorage.getItem("alienInvasionProfile");
+      if (savedProfile) {
+        var profile = JSON.parse(savedProfile);
+        this.playerName = profile.playerName || "";
+        this.highScore = profile.highScore || 0;
+      }
+    } catch (e) {
+      console.log("Error loading profile:", e);
+    }
+  },
+
+  save: function () {
+    try {
+      var profile = {
+        playerName: this.playerName,
+        highScore: this.highScore,
+      };
+      localStorage.setItem("alienInvasionProfile", JSON.stringify(profile));
+    } catch (e) {
+      console.log("Error saving profile:", e);
+    }
+  },
+
+  updateHighScore: function (score) {
+    if (score > this.highScore) {
+      this.highScore = score;
+      this.save();
+      return true;
+    }
+    return false;
+  },
+
+  setPlayerName: function (name) {
+    this.playerName = name;
+    this.save();
+  },
 };

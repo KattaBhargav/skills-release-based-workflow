@@ -65,6 +65,9 @@ var OBJECT_PLAYER = 1,
 var startGame = function () {
   var ua = navigator.userAgent.toLowerCase();
 
+  // Initialize user profile
+  UserProfile.init();
+
   // Only 1 row of stars
   if (ua.match(/android/)) {
     Game.setBoard(0, new Starfield(50, 0.6, 100, true));
@@ -73,6 +76,16 @@ var startGame = function () {
     Game.setBoard(1, new Starfield(50, 0.6, 100));
     Game.setBoard(2, new Starfield(100, 1.0, 50));
   }
+
+  // Show player name screen if no name is set, otherwise show title screen
+  if (!UserProfile.playerName) {
+    Game.setBoard(3, new PlayerNameScreen(showTitleScreen));
+  } else {
+    showTitleScreen();
+  }
+};
+
+var showTitleScreen = function () {
   Game.setBoard(
     3,
     new TitleScreen("Alien Invasion", "Press fire to start playing", playGame)
@@ -100,16 +113,28 @@ var playGame = function () {
 };
 
 var winGame = function () {
+  // Update high score
+  var isNewHighScore = UserProfile.updateHighScore(Game.points);
+  var message = isNewHighScore
+    ? "You win! New High Score!"
+    : "You win!";
+
   Game.setBoard(
     3,
-    new TitleScreen("You win!", "Press fire to play again", playGame)
+    new TitleScreen(message, "Press fire to play again", playGame)
   );
 };
 
 var loseGame = function () {
+  // Update high score
+  var isNewHighScore = UserProfile.updateHighScore(Game.points);
+  var message = isNewHighScore
+    ? "New High Score!"
+    : "You lose!";
+
   Game.setBoard(
     3,
-    new TitleScreen("You lose!", "Press fire to play again", playGame)
+    new TitleScreen(message, "Press fire to play again", playGame)
   );
 };
 
