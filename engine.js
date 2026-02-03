@@ -207,40 +207,29 @@ var TitleScreen = function TitleScreen(title, subtitle, callback) {
 };
 
 var PlayerNameScreen = function (callback) {
-  var playerName = UserProfile.playerName || "";
   var self = this;
 
   this.step = function (dt) {
-    // This screen will be replaced by prompt-based input
+    // Screen is replaced immediately after prompt
   };
 
   this.draw = function (ctx) {
+    // Draw a simple loading/waiting screen
     ctx.fillStyle = "#00FF00";
-
     ctx.font = "bold 30px bangers";
-    var title = "Enter Your Name";
+    var title = "Welcome to Alien Invasion!";
     var measure = ctx.measureText(title);
-    ctx.fillText(title, Game.width / 2 - measure.width / 2, Game.height / 2 - 40);
-
-    ctx.font = "bold 20px bangers";
-    var subtitle = "Current: " + (playerName || "Guest");
-    var measure2 = ctx.measureText(subtitle);
-    ctx.fillText(subtitle, Game.width / 2 - measure2.width / 2, Game.height / 2);
-
-    var instruction = "Press SPACE to continue";
-    var measure3 = ctx.measureText(instruction);
-    ctx.fillText(
-      instruction,
-      Game.width / 2 - measure3.width / 2,
-      Game.height / 2 + 40
-    );
+    ctx.fillText(title, Game.width / 2 - measure.width / 2, Game.height / 2);
   };
 
-  // Prompt for name when screen is created
+  // Short delay to allow the game canvas to render before showing the prompt
   setTimeout(function () {
-    var name = prompt("Enter your name:", playerName || "");
+    var name = prompt("Enter your name:", UserProfile.playerName || "Guest");
     if (name && name.trim()) {
       UserProfile.setPlayerName(name.trim());
+    } else {
+      // Set default name if none provided
+      UserProfile.setPlayerName("Guest");
     }
     if (callback) callback();
   }, 100);
